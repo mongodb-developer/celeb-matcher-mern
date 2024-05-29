@@ -1,6 +1,6 @@
-# Celebrity Matcher (FARM Stack) Demo
+# Celebrity Matcher (MERN Stack) Demo
 
-This is a small FARM (FastAPI, React, MongoDB) project that illustrates integration with MongoDB's vector search, and AWS's Bedrock model hosting service.
+This is a small MERN (MongoDB, Express.js, React, Node.js) project that illustrates integration with MongoDB's vector search, and AWS's Bedrock model hosting service.
 
 ## Run it!
 
