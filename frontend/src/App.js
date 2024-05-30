@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/alt-text */
-//import logo from './logo.svg';
 import "./App.css";
 
 import React from "react";
@@ -108,7 +107,7 @@ function App() {
         })}
 
       {description && (
-        <div class="description">
+        <div className="description">
           <h2>Description:</h2>
           <p>{description}</p>
         </div>

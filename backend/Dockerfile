@@ -1,5 +1,5 @@
 # Use the official Node.js image from the Docker Hub, specifying version 18
-FROM node:18
+FROM node:20.5.1-alpine3.18
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app

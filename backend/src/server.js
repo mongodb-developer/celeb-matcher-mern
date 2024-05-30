@@ -2,17 +2,21 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const MongoClient = require('mongodb').MongoClient;
 const AWS = require('aws-sdk');
-const { Base64 } = require('js-base64');
 const Jimp = require('jimp');
+const cors = require('cors');
 const { promisify } = require('util');
+const { Buffer } = require('buffer');
+
+require("aws-sdk/lib/maintenance_mode_message").suppress = true;
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
 const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
-const DEBUG = process.env.DEBUG ? ['1', 'true', 'on', 'yes'].includes(process.env.DEBUG.trim().toLowerCase()) : false;
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
+
 
 const bedrock = new AWS.BedrockRuntime({
   accessKeyId: AWS_ACCESS_KEY,
@@ -28,13 +32,27 @@ async function connectToDatabase() {
   await client.connect();
   db = client.db();
   celebImagesCollection = db.collection('celeb_images');
-  
+
   const pong = await db.command({ ping: 1 });
   if (pong.ok !== 1) {
     throw new Error('Cluster connection is not okay!');
   }
   console.log('Connected to MongoDB');
 }
+
+
+const constructBody = (base64String, text = null) => {
+  const body = {
+    inputImage: base64String,
+    embeddingConfig: { outputEmbeddingLength: 1024 }
+  };
+
+  if (text) {
+    body.inputText = text;
+  }
+
+  return JSON.stringify(body);
+};
 
 app.post('/api/search', async (req, res) => {
   const { img } = req.body;
@@ -44,49 +62,49 @@ app.post('/api/search', async (req, res) => {
   }
 
   const imageBase64 = img.split(",")[1];
-  const imageBuffer = Buffer.from(imageBase64, 'base64');
 
-  const image = await Jimp.read(imageBuffer);
-  image.resize(800, 600).quality(85);
-
-  const imgBuffer = await promisify(image.getBuffer).call(image, Jimp.MIME_JPEG);
-  const imgBase64 = imgBuffer.toString('base64');
-
-  const body = constructBody(imgBase64);
-  const embedding = await getEmbedding(body);
-
-  const docs = await celebImagesCollection.aggregate([
-    {
-      $vectorSearch: {
-        index: 'vector_index',
-        path: 'embeddings',
-        queryVector: embedding,
-        numCandidates: 15,
-        limit: 3,
-      }
-    },
-    { $project: { image: 1 } }
-  ]).toArray();
-
-  const images = docs.map(doc => standardizeImage(doc.image));
-  const description = await generateImageDescription(images, imgBase64);
-
-  res.json({
-    description,
-    images,
-  });
-});
-
-function constructBody(base64String, text = null) {
-  const body = {
-    inputImage: base64String,
-    embeddingConfig: { outputEmbeddingLength: 1024 }
-  };
-  if (text) {
-    body.inputText = text;
+  if (!isValidBase64(imageBase64)) {
+    return res.status(400).send('Invalid image format.');
   }
-  return JSON.stringify(body);
-}
+
+  try {
+    const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+    const image = await Jimp.read(imageBuffer);
+    image.resize(800, 600).quality(85);
+
+    const imgBuffer = await promisify(image.getBuffer).call(image, Jimp.MIME_JPEG);
+    const imgBase64 = imgBuffer.toString('base64');
+
+    const body = constructBody(imgBase64);
+    const embedding = await getEmbedding(body);
+
+    const docs = await celebImagesCollection.aggregate([
+      {
+        $vectorSearch: {
+          index: 'vector_index',
+          path: 'embeddings',
+          queryVector: embedding,
+          numCandidates: 15,
+          limit: 3,
+        }
+      },
+      { $project: { image: 1 } }
+    ]).toArray();
+
+    const images = docs.map(doc => doc.image);
+    const description = await generateImageDescription(images, imgBase64);
+
+    res.json({
+      description,
+      images,
+    });
+    console.log("Data sent:", { description });
+  } catch (error) {
+    console.error('Error processing image:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 async function getEmbedding(body) {
   const params = {
@@ -100,35 +118,51 @@ async function getEmbedding(body) {
   return JSON.parse(response.body).embedding;
 }
 
-async function generateImageDescription(imagesBase64Strs, imageBase64) {
+async function generateImageDescription(images_base64_strs, image_base64) {
   const claudeBody = JSON.stringify({
     anthropic_version: 'bedrock-2023-05-31',
     max_tokens: 1000,
     system: 'Please act as face comparison analyzer.',
-    messages: [
+    "messages": [
       {
-        role: 'user',
-        content: [
+        "role": "user",
+        "content": [
           {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: 'image/jpeg',
-              data: imageBase64,
+            "type": "image",
+            "source": {
+              "type": "base64",
+              "media_type": "image/jpeg",
+              "data": image_base64,
             },
           },
-          ...imagesBase64Strs.map(data => ({
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: 'image/jpeg',
-              data,
-            },
-          })),
           {
-            type: 'text',
-            text: 'Please let the user know how their first image is similar to the other 3 and which one is the most similar?',
-          }
+            "type": "image",
+            "source": {
+              "type": "base64",
+              "media_type": "image/jpeg",
+              "data": images_base64_strs[0],
+            },
+          },
+          {
+            "type": "image",
+            "source": {
+              "type": "base64",
+              "media_type": "image/jpeg",
+              "data": images_base64_strs[1],
+            },
+          },
+          {
+            "type": "image",
+            "source": {
+              "type": "base64",
+              "media_type": "image/jpeg",
+              "data": images_base64_strs[2],
+            },
+          },
+          {
+            "type": "text",
+            "text": "Please let the user know how their first image is similar to the other 3 and which one is the most similar?",
+          },
         ],
       }
     ],
@@ -141,15 +175,19 @@ async function generateImageDescription(imagesBase64Strs, imageBase64) {
     contentType: 'application/json'
   };
 
-  const response = await bedrock.invokeModel(params).promise();
-  return JSON.parse(response.body).content[0].text || 'No description available';
+  try {
+    console.log('Sending request to AWS with body');
+    const response = await bedrock.invokeModel(params).promise();
+    return JSON.parse(response.body).content[0].text || 'No description available';
+  } catch (error) {
+    console.error('Error from AWS:', error);
+    throw error;
+  }
 }
 
-function standardizeImage(imageBase64) {
-  const imageBuffer = Buffer.from(imageBase64, 'base64');
-  const img = Jimp.read(imageBuffer);
-  const imgBuffer = img.getBuffer(Jimp.MIME_JPEG);
-  return imgBuffer.toString('base64');
+function isValidBase64(base64) {
+  const base64Regex = /^([0-9a-zA-Z+/=]{4})*(([0-9a-zA-Z+/=]{4})|([0-9a-zA-Z+/=]{3}=)|([0-9a-zA-Z+/=]{2}==))?$/;
+  return base64Regex.test(base64);
 }
 
 const PORT = process.env.PORT || 3001;
