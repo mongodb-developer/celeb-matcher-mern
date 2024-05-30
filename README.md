@@ -20,7 +20,7 @@ You need to set the following variables:
 Once you've set those, you can spin up the application with:
 
 ```shell
-docker compose up
+docker-compose up --build
 ```
 
 This will spin up three containers:
