@@ -17,7 +17,13 @@ You need to set the following variables:
 | **AWS_ACCESS_KEY** | An AWS access key with permission to use the Bedrock service.                                                                                |
 | **AWS_SECRET_KEY** | The secret key associated with AWS_ACCESS_KEY.                                                                                               |
 
-Once you've set those, you can spin up the application with:
+Once you've set those, you can execute the following command to install npm packages:
+
+```shell
+cd frontend && npm install && cd ../backend && npm install
+```
+
+And now, you can start up the application with:
 
 ```shell
 docker-compose up --build
