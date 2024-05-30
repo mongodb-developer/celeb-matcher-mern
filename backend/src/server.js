@@ -1,22 +1,22 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const MongoClient = require('mongodb').MongoClient;
-const AWS = require('aws-sdk');
-const Jimp = require('jimp');
-const cors = require('cors');
-const { promisify } = require('util');
-const { Buffer } = require('buffer');
+import express from 'express';
+import bodyParser from 'body-parser';
+import { MongoClient } from 'mongodb';
+import AWS from 'aws-sdk';
+import Jimp from 'jimp';
+import cors from 'cors';
+import { promisify } from 'util';
+import { Buffer } from 'buffer';
+import dotenv from 'dotenv';
 
-require("aws-sdk/lib/maintenance_mode_message").suppress = true;
+dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
-const AWS_SECRET_KEY = process.env.AWS_SECRET_KEY;
+AWS.config.suppressMaintenanceModeMessage = true;
+
+const { MONGODB_URI, AWS_ACCESS_KEY, AWS_SECRET_KEY } = process.env;
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
-
 
 const bedrock = new AWS.BedrockRuntime({
   accessKeyId: AWS_ACCESS_KEY,
@@ -27,7 +27,7 @@ const bedrock = new AWS.BedrockRuntime({
 let db;
 let celebImagesCollection;
 
-async function connectToDatabase() {
+const connectToDatabase = async () => {
   const client = new MongoClient(MONGODB_URI);
   await client.connect();
   db = client.db();
@@ -39,7 +39,6 @@ async function connectToDatabase() {
   }
   console.log('Connected to MongoDB');
 }
-
 
 const constructBody = (base64String, text = null) => {
   const body = {
@@ -106,7 +105,7 @@ app.post('/api/search', async (req, res) => {
   }
 });
 
-async function getEmbedding(body) {
+const getEmbedding = async (body) => {
   const params = {
     body,
     modelId: 'amazon.titan-embed-image-v1',
@@ -118,7 +117,7 @@ async function getEmbedding(body) {
   return JSON.parse(response.body).embedding;
 }
 
-async function generateImageDescription(images_base64_strs, image_base64) {
+const generateImageDescription = async (images_base64_strs, image_base64) => {
   const claudeBody = JSON.stringify({
     anthropic_version: 'bedrock-2023-05-31',
     max_tokens: 1000,
@@ -185,7 +184,7 @@ async function generateImageDescription(images_base64_strs, image_base64) {
   }
 }
 
-function isValidBase64(base64) {
+const isValidBase64 = (base64) => {
   const base64Regex = /^([0-9a-zA-Z+/=]{4})*(([0-9a-zA-Z+/=]{4})|([0-9a-zA-Z+/=]{3}=)|([0-9a-zA-Z+/=]{2}==))?$/;
   return base64Regex.test(base64);
 }
