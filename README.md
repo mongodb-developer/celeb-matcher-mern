@@ -16,7 +16,6 @@ You need to set the following variables:
 | **MONGODB_URI**    | The connection string (URI) for a MongoDB Atlas cluster. The connection string must contain the name of the database you want to connect to! |
 | **AWS_ACCESS_KEY** | An AWS access key with permission to use the Bedrock service.                                                                                |
 | **AWS_SECRET_KEY** | The secret key associated with AWS_ACCESS_KEY.                                                                                               |
-| **DEBUG**          | Set this to "true" to enable stack traces and reload. Do **not** enable in production.                                                       |
 
 Once you've set those, you can spin up the application with:
 
@@ -28,9 +27,9 @@ This will spin up three containers:
 
 | Service      | Port | Description                                                                                                            |
 | ------------ | ---- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Frontend** | 8002 | A React application, created with [create-react-app], and running in development mode.                                 |
-| **Backend**  | 8003 | A FastAPI application that routes requests from frontend to MongoDB & [Amazon Bedrock].                                |
-| **Nginx**    | 8001 | A simple reverse-proxy that sits in front of frontend & backend, allowing them to be served from the same host & port. |
+| **Frontend** | 3000 | A React application, created with [create-react-app], and running in development mode.                                 |
+| **Backend**  | 3001 | A FastAPI application that routes requests from frontend to MongoDB & [Amazon Bedrock].                                |
+| **Nginx**    | 3002 | A simple reverse-proxy that sits in front of frontend & backend, allowing them to be served from the same host & port. |
 
 Both frontend and backend are configured to load any code changes made on-disk.
 
