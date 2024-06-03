@@ -35,7 +35,7 @@ This will spin up three containers:
 | ------------ | ---- | ---------------------------------------------------------------------------------------------------------------------- |
 | **Nginx**    | 8001 | A simple reverse-proxy that sits in front of frontend & backend, allowing them to be served from the same host & port. |
 | **Frontend** | 8002 | A React application, created with [create-react-app], and running in development mode.                                 |
-| **Backend**  | 8003 | A FastAPI application that routes requests from frontend to MongoDB & [Amazon Bedrock].                                |
+| **Backend**  | 8003 | A Express.js application that routes requests from frontend to MongoDB & [Amazon Bedrock].                                |
 
 Both frontend and backend are configured to load any code changes made on-disk.
 
