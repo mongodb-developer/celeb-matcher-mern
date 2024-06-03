@@ -7,7 +7,7 @@ This is a small MERN (MongoDB, Express.js, React, Node.js) project that illustra
 You can run the development version with [Docker Compose].
 
 First, you must configure the application, using a `.env` file,
-in the root directory of the project. (The one that contains `compose.yml`).
+in the **backend** directory of the project. (The one that contains `Dockerfile`).
 
 You need to set the following variables:
 
@@ -20,7 +20,7 @@ You need to set the following variables:
 Once you've set those, you can execute the following command to install npm packages:
 
 ```shell
-cd frontend && npm install && cd ../backend && npm install
+cd frontend && npm install && cd ../backend && npm install && cd ..
 ```
 
 And now, you can start up the application with:
@@ -33,9 +33,9 @@ This will spin up three containers:
 
 | Service      | Port | Description                                                                                                            |
 | ------------ | ---- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Frontend** | 3000 | A React application, created with [create-react-app], and running in development mode.                                 |
-| **Backend**  | 3001 | A FastAPI application that routes requests from frontend to MongoDB & [Amazon Bedrock].                                |
-| **Nginx**    | 3002 | A simple reverse-proxy that sits in front of frontend & backend, allowing them to be served from the same host & port. |
+| **Nginx**    | 8001 | A simple reverse-proxy that sits in front of frontend & backend, allowing them to be served from the same host & port. |
+| **Frontend** | 8002 | A React application, created with [create-react-app], and running in development mode.                                 |
+| **Backend**  | 8003 | A FastAPI application that routes requests from frontend to MongoDB & [Amazon Bedrock].                                |
 
 Both frontend and backend are configured to load any code changes made on-disk.
 
