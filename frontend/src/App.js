@@ -13,7 +13,7 @@ function isLandscape() {
 function App() {
   const [imgSrc, setImgSrc] = React.useState(null);
   const [orientation, setOrientation] = React.useState(
-    isLandscape() ? "landscape" : "portrait"
+    isLandscape() ? "landscape" : "portrait",
   );
   const [loading, setLoading] = React.useState(false);
   const [lookalikes, setLookalikes] = React.useState(null);
@@ -24,17 +24,21 @@ function App() {
   };
 
   React.useEffect(
-    () => (
-      // eslint-disable-next-line no-sequences
-      onOrientationChange(),
-      window.screen.orientation.addEventListener("change", onOrientationChange),
-      () =>
-        window.screen.orientation.removeEventListener(
+    () =>
+      (
+        // eslint-disable-next-line no-sequences
+        onOrientationChange(),
+        window.screen.orientation.addEventListener(
           "change",
-          onOrientationChange
-        )
-    ),
-    []
+          onOrientationChange,
+        ),
+        () =>
+          window.screen.orientation.removeEventListener(
+            "change",
+            onOrientationChange,
+          )
+      ),
+    [],
   );
 
   let aspectRatio;
