@@ -44,7 +44,7 @@ const connectToDatabase = async () => {
 const constructBody = (base64String, text = null) => {
   const body = {
     inputImage: base64String,
-    embeddingConfig: { outputEmbeddingLength: 5096 },
+    embeddingConfig: { outputEmbeddingLength: 1024 },
   };
 
   if (text) {
