@@ -16,7 +16,7 @@ process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = "1";
 const { MONGODB_URI, AWS_ACCESS_KEY, AWS_SECRET_KEY } = process.env;
 
 const app = express();
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "200mb" }));
 app.use(cors());
 
 const bedrock = new AWS.BedrockRuntime({
