@@ -11,7 +11,7 @@ import process from "process";
 
 dotenv.config();
 
-process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = '1';
+process.env.AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE = "1";
 
 const { MONGODB_URI, AWS_ACCESS_KEY, AWS_SECRET_KEY } = process.env;
 
@@ -44,7 +44,7 @@ const connectToDatabase = async () => {
 const constructBody = (base64String, text = null) => {
   const body = {
     inputImage: base64String,
-    embeddingConfig: { outputEmbeddingLength: 1024 },
+    embeddingConfig: { outputEmbeddingLength: 5096 },
   };
 
   if (text) {
